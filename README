@@ -1,0 +1,10 @@
+Every time you open a new terminal:
+
+1. Be in main directory ("DEEZPROJEKT") and execute: 
+Set-ExecutionPolicy Unrestricted -Scope Process
+
+2. Execute:
+.venv\Scripts\activate
+
+3. Execute:
+flask run --debug
