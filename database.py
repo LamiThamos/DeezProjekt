@@ -3,8 +3,8 @@ import os
 
 # Try to get from system enviroment variable
 # Set your Postgres user, password, and database name as second arguments of these three next function calls
-user = os.environ.get('PGUSER', 'postgres')
-password = os.environ.get('PGPASSWORD', '102mater')
+user = os.environ.get('PGUSER', 'Project')
+password = os.environ.get('PGPASSWORD', 'Deez')
 dbname = os.environ.get('PGDATABASE', 'postgres')
 host = os.environ.get('HOST', '127.0.0.1')
 
@@ -36,22 +36,29 @@ def init_db():
     for (name, NumStudents, GradeFormat, GradeAverage, PassPercentage, ExamType) in courses:
         cur.execute('INSERT INTO Courses (name, NumStudents, GradeFormat, GradeAverage, PassPercentage, ExamType) VALUES (%s) ON CONFLICT DO NOTHING', (name, NumStudents, GradeFormat, GradeAverage, PassPercentage, ExamType))
 
-    cur.execute('''
+    cur.execute(''' 
     CREATE OR REPLACE FUNCTION update_professor_stats()
     RETURNS TRIGGER AS $$
     BEGIN
         UPDATE Professors
-        SET GradeAverage = (
-            SELECT 
-                SUM(LOG(NumStudents) * GradeAverage) / SUM(LOG(NumStudents)) AS NewGradeAverage
-            FROM Courses
-            WHERE )
+        SET GradeAverage = ( 
+            SELECT (
+                SUM(LOG( CASE WHEN CourseHasProfessor.IsCourseResposible THEN Courses.NumStudents*2 ELSE Courses.NumStudents END) * Courses.GradeAverage) 
+                / 
+                SUM(LOG( CASE WHEN CourseHasProfessor.IsCourseResposible THEN Courses.NumStudents*2 ELSE Courses.NumStudents END))
+                ) 
+                AS NewGradeAverage
             FROM Courses
             JOIN CourseHasProfessor ON Courses.id = CourseHasProfessor.CourseID
             WHERE CourseHasProfessor.ProfessorID = NEW.ProfessorID
         ),
         PassPercentage = (
-            SELECT AVG(PassPercentage)
+            SELECT (
+                SUM(LOG( CASE WHEN CourseHasProfessor.IsCourseResposible THEN Courses.NumStudents*2 ELSE Courses.NumStudents END) * Courses.PassPercentage) 
+                / 
+                SUM(LOG( CASE WHEN CourseHasProfessor.IsCourseResposible THEN Courses.NumStudents*2 ELSE Courses.NumStudents END))
+                ) 
+                AS NewPassPercentage
             FROM Courses
             JOIN CourseHasProfessor ON Courses.id = CourseHasProfessor.CourseID
             WHERE CourseHasProfessor.ProfessorID = NEW.ProfessorID
