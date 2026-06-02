@@ -1,10 +1,44 @@
-Every time you open a new terminal:
+This README is for Windows OS. We do not have anything else than Windows in our group.
 
+---------------------------------------------------------------------------------------
+Configure user, password, and database name inside database.py:
+You must configure the program to a PostgreSQL-user and -password, 
+that have access to the given -database on your device.
+
+1. Change second argument of os.environ.get in line 6 to your user
+2. Change second argument of os.environ.get in line 7 to your password
+3. Change second argument of os.environ.get in line 8 to your database name
+
+---------------------------------------------------------------------------------------
+Environment set-up, (must be done once):
 1. Be in main directory ("DEEZPROJEKT") and execute: 
+python -m venv .venv
+
+2. Execute: 
+Set-ExecutionPolicy Unrestricted -Scope Process
+
+3. Execute:
+.venv\Scripts\activate
+
+4. Execute:
+pip install -e .
+
+
+---------------------------------------------------------------------------------------
+Activate environment and run code in a new terminal:
+
+1. Execute: 
 Set-ExecutionPolicy Unrestricted -Scope Process
 
 2. Execute:
 .venv\Scripts\activate
 
 3. Execute:
+flask run --debug
+
+
+---------------------------------------------------------------------------------------
+Run code inside a properly activated environment:
+
+1. Execute:
 flask run --debug
