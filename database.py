@@ -17,7 +17,7 @@ def db_connection():
 def init_db():
     conn = db_connection()
     cur = conn.cursor()
-    cur.execute('''CREATE TABLE IF NOT EXISTS Professors (id SERIAL PRIMARY KEY, Name TEXT NOT NULL)''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS Professors (id SERIAL PRIMARY KEY, Name TEXT NOT NULL, GradeAverage FLOAT NOT NULL DEFAULT 0, PassPercentage FLOAT NOT NULL DEFAULT 0)''')
     cur.execute('''CREATE TABLE IF NOT EXISTS Courses (id SERIAL PRIMARY KEY, name TEXT NOT NULL, NumStudents INT NOT NULL, GradeFormat TEXT NOT NULL, GradeAverage FLOAT, PassPercentage FLOAT NOT NULL, ExamType TEXT NOT NULL)''')
     cur.execute('''CREATE TABLE IF NOT EXISTS CourseHasProfessor (CourseID INT NOT NULL, ProfessorID INT NOT NULL, IsCourseResposible BOOLEAN NOT NULL DEFAULT FALSE, (CourseID, ProfessorID) PRIMARY KEY NOT NULL, CourseID FOREIGN KEY REFERENCES Courses(ID), ProfessorID FOREIGN KEY REFERENCES Professors(ID))''')
     conn.commit()
@@ -36,9 +36,47 @@ def init_db():
     for (name, NumStudents, GradeFormat, GradeAverage, PassPercentage, ExamType) in courses:
         cur.execute('INSERT INTO Courses (name, NumStudents, GradeFormat, GradeAverage, PassPercentage, ExamType) VALUES (%s) ON CONFLICT DO NOTHING', (name, NumStudents, GradeFormat, GradeAverage, PassPercentage, ExamType))
 
+    cur.execute('''
+    CREATE OR REPLACE FUNCTION update_professor_stats()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        UPDATE Professors
+        SET GradeAverage = (
+            SELECT 
+                SUM(LOG(NumStudents) * GradeAverage) / SUM(LOG(NumStudents)) AS NewGradeAverage
+            FROM Courses
+            WHERE )
+            FROM Courses
+            JOIN CourseHasProfessor ON Courses.id = CourseHasProfessor.CourseID
+            WHERE CourseHasProfessor.ProfessorID = NEW.ProfessorID
+        ),
+        PassPercentage = (
+            SELECT AVG(PassPercentage)
+            FROM Courses
+            JOIN CourseHasProfessor ON Courses.id = CourseHasProfessor.CourseID
+            WHERE CourseHasProfessor.ProfessorID = NEW.ProfessorID
+        )
+        WHERE id = NEW.ProfessorID;
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+    ''')
+
+    conn.commit()
+
+    cur.execute('''
+    CREATE TRIGGER update_professor_stats_trigger
+    AFTER INSERT OR UPDATE ON CourseHasProfessor
+    FOR EACH ROW
+    EXECUTE FUNCTION update_professor_stats();
+    ''')
+
+    conn.commit()
+
     courseHasProfessorRelation = [(1, 1, True), (1, 2, False), (2, 6, True), (3, 3, True), (4, 4, True), (5, 5, True), (3, 5, False)]
     for (CourseID, ProfessorID, IsCourseResposible) in courseHasProfessorRelation:
         cur.execute('INSERT INTO CourseHasProfessor (CourseID, ProfessorID, IsCourseResposible) VALUES (%s) ON CONFLICT DO NOTHING', (CourseID, ProfessorID, IsCourseResposible))
+
 
 
     conn.commit()
