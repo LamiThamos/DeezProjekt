@@ -3,88 +3,110 @@ import os
 
 # Try to get from system enviroment variable
 # Set your Postgres user, password, and database name as second arguments of these three next function calls
-user = os.environ.get('PGUSER', 'Project')
-password = os.environ.get('PGPASSWORD', 'Deez')
-dbname = os.environ.get('PGDATABASE', 'postgres')
-host = os.environ.get('HOST', '127.0.0.1')
+dbname   = os.environ.get('PGDATABASE', 'postgres')
+user     = os.environ.get('PGUSER',     'Project')
+password = os.environ.get('PGPASSWORD', '123')
+host     = os.environ.get('HOST',       '127.0.0.1')
 
 def db_connection():
-    db = "dbname=" + dbname + " user=" + user + " host=" + host + " password =" + password
-    conn = psycopg2.connect(db)
-
+    conn = psycopg2.connect(
+        dbname=dbname,
+        user=user,
+        password=password,
+        host=host
+    )
     return conn
 
 def init_db():
     conn = db_connection()
     cur = conn.cursor()
-    cur.execute('''CREATE TABLE IF NOT EXISTS Professors (id SERIAL PRIMARY KEY, Name TEXT NOT NULL, GradeAverage FLOAT NOT NULL DEFAULT 0, PassPercentage FLOAT NOT NULL DEFAULT 0)''')
-    cur.execute('''CREATE TABLE IF NOT EXISTS Courses (id SERIAL PRIMARY KEY, name TEXT NOT NULL, NumStudents INT NOT NULL, GradeFormat TEXT NOT NULL, GradeAverage FLOAT, PassPercentage FLOAT NOT NULL, ExamType TEXT NOT NULL)''')
-    cur.execute('''CREATE TABLE IF NOT EXISTS CourseHasProfessor (CourseID INT NOT NULL, ProfessorID INT NOT NULL, IsCourseResposible BOOLEAN NOT NULL DEFAULT FALSE, (CourseID, ProfessorID) PRIMARY KEY NOT NULL, CourseID FOREIGN KEY REFERENCES Courses(ID), ProfessorID FOREIGN KEY REFERENCES Professors(ID))''')
-    conn.commit()
 
-    professors = ['Dmitriy', 'Panos', 'Philippe Bonnet', 'Mikkel Abrahamsen', 'Boris Düdder', 'Jacob']
-    for professorName in professors:
-        cur.execute('INSERT INTO Professors (professorName) VALUES (%s) ON CONFLICT DO NOTHING', professorName)
+    cur.execute("""
+        CREATE TABLE OF NOT EXISTS Professors(
+            id SERIAL PRIMARY KEY,
+            Name TEXT NOT NULL,
+            grade_average FLOAT NOT NULL DEFAULT 0,
+            pass_percentage FLOAT NOT NULL DEFAULT 0
+        );
+    """)
 
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS Courses (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL UNIQUE,
+            num_students INT NOT NULL,
+            grade_format TEXT NOT NULL,
+            grade_average FLOAT,
+            pass_percentage FLOAT NOT NULL,
+            exam_type TEXT NOT NULL
+        );
+    """)
 
-    courses = [('DIS', 100, '7-trinsskala', 3.5, 85.0, 'ITX'),
-                ('RAD', 80, '7-trinsskala', 3.0, 80.0, 'Oral'),
-                ('POP', 60, 'Pass/fail', 2.5, 75.0, 'Continuous assessment'),
-                ('DMA', 50, 'Pass/fail', 3.8, 90.0, 'Continuous assessment'),
-                ('SU', 40, 'Pass/fail', 2.0, 70.0, 'Oral') 
-               ]
-    for (name, NumStudents, GradeFormat, GradeAverage, PassPercentage, ExamType) in courses:
-        cur.execute('INSERT INTO Courses (name, NumStudents, GradeFormat, GradeAverage, PassPercentage, ExamType) VALUES (%s) ON CONFLICT DO NOTHING', (name, NumStudents, GradeFormat, GradeAverage, PassPercentage, ExamType))
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS CourseHasProfessor (
+            course_id INT NOT NULL,
+            professor_id INT NOT NULL,
+            is_course_responsible BOOLEAN NOT NULL DEFAULT FALSE,
 
-    cur.execute(''' 
-    CREATE OR REPLACE FUNCTION update_professor_stats()
-    RETURNS TRIGGER AS $$
-    BEGIN
-        UPDATE Professors
-        SET GradeAverage = ( 
-            SELECT (
-                SUM(LOG( CASE WHEN CourseHasProfessor.IsCourseResposible THEN Courses.NumStudents*2 ELSE Courses.NumStudents END) * Courses.GradeAverage) 
-                / 
-                SUM(LOG( CASE WHEN CourseHasProfessor.IsCourseResposible THEN Courses.NumStudents*2 ELSE Courses.NumStudents END))
-                ) 
-                AS NewGradeAverage
-            FROM Courses
-            JOIN CourseHasProfessor ON Courses.id = CourseHasProfessor.CourseID
-            WHERE CourseHasProfessor.ProfessorID = NEW.ProfessorID
-        ),
-        PassPercentage = (
-            SELECT (
-                SUM(LOG( CASE WHEN CourseHasProfessor.IsCourseResposible THEN Courses.NumStudents*2 ELSE Courses.NumStudents END) * Courses.PassPercentage) 
-                / 
-                SUM(LOG( CASE WHEN CourseHasProfessor.IsCourseResposible THEN Courses.NumStudents*2 ELSE Courses.NumStudents END))
-                ) 
-                AS NewPassPercentage
-            FROM Courses
-            JOIN CourseHasProfessor ON Courses.id = CourseHasProfessor.CourseID
-            WHERE CourseHasProfessor.ProfessorID = NEW.ProfessorID
-        )
-        WHERE id = NEW.ProfessorID;
-        RETURN NEW;
-    END;
-    $$ LANGUAGE plpgsql;
-    ''')
+            PRIMARY KEY (course_id, professor_id),
+
+            FOREIGN KEY (course_id)
+                REFERENCES Courses(id)
+                ON DELETE CASCADE,
+
+            FOREIGN KEY (professor_id)
+                REFERENCES Professors(id)
+                ON DELETE CASCADE
+        );
+    """)
 
     conn.commit()
-
-    cur.execute('''
-    CREATE TRIGGER update_professor_stats_trigger
-    AFTER INSERT OR UPDATE ON CourseHasProfessor
-    FOR EACH ROW
-    EXECUTE FUNCTION update_professor_stats();
-    ''')
-
-    conn.commit()
-
-    courseHasProfessorRelation = [(1, 1, True), (1, 2, False), (2, 6, True), (3, 3, True), (4, 4, True), (5, 5, True), (3, 5, False)]
-    for (CourseID, ProfessorID, IsCourseResposible) in courseHasProfessorRelation:
-        cur.execute('INSERT INTO CourseHasProfessor (CourseID, ProfessorID, IsCourseResposible) VALUES (%s) ON CONFLICT DO NOTHING', (CourseID, ProfessorID, IsCourseResposible))
-
-
-
-    conn.commit()
+    cur.close()
     conn.close()
+
+def seed_db():
+    conn = db_connection()
+    cur = conn.cursor()
+
+    professors = [
+        "Dmitriy",
+        "Panos",
+        "Philippe Bonnet",
+        "Mikkel Abrahamsen",
+        "Boris Düdder",
+        "Jacob"
+    ]
+
+    for name in professors:
+        cur.execute(
+            "INSERT INTO Professors (name) VALUES (%s) ON CONFLICT DO NOTHING;",
+            (name)
+        )
+
+    courses = [
+        ("DIS", 100, "7-trinsskala", 3.5, 85.0, "ITX"),
+        ("RAD", 80, "7-trinsskala", 3.0, 80.0, "Oral"),
+        ("POP", 60, "Pass/fail", 2.5, 75.0, "Continuous assessment"),
+        ("DMA", 50, "Pass/fail", 3.8, 90.0, "Continuous assessment"),
+        ("SU", 40, "Pass/fail", 2.0, 70.0, "Oral")
+    ]
+
+    for course in courses:
+        cur.execute("""
+            INSERT INTO Courses
+            (name, num_students, grade_format, grade_average, pass_percentage, exam_type)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT DO NOTHING;
+        """, course)
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+if __name__ == "__main__":
+    init_db()
+    seed_db()
+
+
+
+
