@@ -1,0 +1,74 @@
+#def init_db():
+    conn = db_connection()
+    cur = conn.cursor()
+    cur.execute('''CREATE TABLE IF NOT EXISTS Professors (id SERIAL PRIMARY KEY, Name TEXT NOT NULL, GradeAverage FLOAT NOT NULL DEFAULT 0, PassPercentage FLOAT NOT NULL DEFAULT 0)''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS Courses (id SERIAL PRIMARY KEY, name TEXT NOT NULL, NumStudents INT NOT NULL, GradeFormat TEXT NOT NULL, GradeAverage FLOAT, PassPercentage FLOAT NOT NULL, ExamType TEXT NOT NULL)''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS CourseHasProfessor (CourseID INT NOT NULL, ProfessorID INT NOT NULL, IsCourseResposible BOOLEAN NOT NULL DEFAULT FALSE, (CourseID, ProfessorID) PRIMARY KEY NOT NULL, CourseID FOREIGN KEY REFERENCES Courses(ID), ProfessorID FOREIGN KEY REFERENCES Professors(ID))''')
+    conn.commit()
+
+    professors = ['Dmitriy', 'Panos', 'Philippe Bonnet', 'Mikkel Abrahamsen', 'Boris Düdder', 'Jacob']
+    for professorName in professors:
+        cur.execute('INSERT INTO Professors (professorName) VALUES (%s) ON CONFLICT DO NOTHING', professorName)
+
+
+    courses = [('DIS', 100, '7-trinsskala', 3.5, 85.0, 'ITX'),
+                ('RAD', 80, '7-trinsskala', 3.0, 80.0, 'Oral'),
+                ('POP', 60, 'Pass/fail', 2.5, 75.0, 'Continuous assessment'),
+                ('DMA', 50, 'Pass/fail', 3.8, 90.0, 'Continuous assessment'),
+                ('SU', 40, 'Pass/fail', 2.0, 70.0, 'Oral') 
+               ]
+    for (name, NumStudents, GradeFormat, GradeAverage, PassPercentage, ExamType) in courses:
+        cur.execute('INSERT INTO Courses (name, NumStudents, GradeFormat, GradeAverage, PassPercentage, ExamType) VALUES (%s) ON CONFLICT DO NOTHING', (name, NumStudents, GradeFormat, GradeAverage, PassPercentage, ExamType))
+
+    cur.execute(''' 
+    CREATE OR REPLACE FUNCTION update_professor_stats()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        UPDATE Professors
+        SET GradeAverage = ( 
+            SELECT (
+                SUM(LOG( CASE WHEN CourseHasProfessor.IsCourseResposible THEN Courses.NumStudents*2 ELSE Courses.NumStudents END) * Courses.GradeAverage) 
+                / 
+                SUM(LOG( CASE WHEN CourseHasProfessor.IsCourseResposible THEN Courses.NumStudents*2 ELSE Courses.NumStudents END))
+                ) 
+                AS NewGradeAverage
+            FROM Courses
+            JOIN CourseHasProfessor ON Courses.id = CourseHasProfessor.CourseID
+            WHERE CourseHasProfessor.ProfessorID = NEW.ProfessorID
+        ),
+        PassPercentage = (
+            SELECT (
+                SUM(LOG( CASE WHEN CourseHasProfessor.IsCourseResposible THEN Courses.NumStudents*2 ELSE Courses.NumStudents END) * Courses.PassPercentage) 
+                / 
+                SUM(LOG( CASE WHEN CourseHasProfessor.IsCourseResposible THEN Courses.NumStudents*2 ELSE Courses.NumStudents END))
+                ) 
+                AS NewPassPercentage
+            FROM Courses
+            JOIN CourseHasProfessor ON Courses.id = CourseHasProfessor.CourseID
+            WHERE CourseHasProfessor.ProfessorID = NEW.ProfessorID
+        )
+        WHERE id = NEW.ProfessorID;
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+    ''')
+
+    conn.commit()
+
+    cur.execute('''
+    CREATE TRIGGER update_professor_stats_trigger
+    AFTER INSERT OR UPDATE ON CourseHasProfessor
+    FOR EACH ROW
+    EXECUTE FUNCTION update_professor_stats();
+    ''')
+
+    conn.commit()
+
+    courseHasProfessorRelation = [(1, 1, True), (1, 2, False), (2, 6, True), (3, 3, True), (4, 4, True), (5, 5, True), (3, 5, False)]
+    for (CourseID, ProfessorID, IsCourseResposible) in courseHasProfessorRelation:
+        cur.execute('INSERT INTO CourseHasProfessor (CourseID, ProfessorID, IsCourseResposible) VALUES (%s) ON CONFLICT DO NOTHING', (CourseID, ProfessorID, IsCourseResposible))
+
+
+
+    conn.commit()
+    conn.close()
