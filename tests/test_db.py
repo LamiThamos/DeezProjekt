@@ -1,14 +1,14 @@
 from database import db_connection, init_db
 
-init_db()
+def test_can_connect_to_database():
+    conn = db_connection()
+    cur = conn.cursor()
 
-conn = db_connection()
-cur = conn.cursor()
+    cur.execute("SELECT 1;")
 
-cur.execute("SELECT * FROM Courses")
-courses = cur.fetchall()
+    cur.close()
+    conn.close()
 
-print(courses)
 
-cur.close()
-conn.close()
+def test_init_db():
+    init_db()

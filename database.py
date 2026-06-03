@@ -3,8 +3,8 @@ import os
 
 # Try to get from system enviroment variable
 # Set your Postgres user, password, and database name as second arguments of these three next function calls
-dbname   = os.environ.get('PGDATABASE', 'postgres')
-user     = os.environ.get('PGUSER',     'Project')
+dbname   = os.environ.get('PGDATABASE', 'DIS Project')
+user     = os.environ.get('PGUSER',     'dis project')
 password = os.environ.get('PGPASSWORD', '123')
 host     = os.environ.get('HOST',       '127.0.0.1')
 
@@ -22,7 +22,7 @@ def init_db():
     cur = conn.cursor()
 
     cur.execute("""
-        CREATE TABLE OF NOT EXISTS Professors(
+        CREATE TABLE IF NOT EXISTS Professors(
             id SERIAL PRIMARY KEY,
             Name TEXT NOT NULL,
             grade_average FLOAT NOT NULL DEFAULT 0,
@@ -103,9 +103,13 @@ def seed_db():
     cur.close()
     conn.close()
 
+#def add_triggers():
+
+
 if __name__ == "__main__":
     init_db()
     seed_db()
+    #add_triggers()
 
 
 
