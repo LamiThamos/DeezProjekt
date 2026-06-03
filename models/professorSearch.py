@@ -1,5 +1,5 @@
 from database import db_connection
-from models.category import Category
+#from models.category import Category
 
 class professorSearch:
     def __init__(self, id, text, category):
