@@ -1,6 +1,6 @@
 from database import db_connection
 
-class Category:
+class courseHasProfessor:
     def __init__(self, id, name):
         self.id = id
         self.name = name

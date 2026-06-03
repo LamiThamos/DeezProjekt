@@ -4,8 +4,8 @@ import os
 # Try to get from system enviroment variable
 # Set your Postgres user, password, and database name as second arguments of these three next function calls
 dbname   = os.environ.get('PGDATABASE', 'postgres')
-user     = os.environ.get('PGUSER',     'Project')
-password = os.environ.get('PGPASSWORD', '123')
+user     = os.environ.get('PGUSER',     'postgres')
+password = os.environ.get('PGPASSWORD', '102mater')
 host     = os.environ.get('HOST',       '127.0.0.1')
 
 def db_connection():
@@ -22,7 +22,7 @@ def init_db():
     cur = conn.cursor()
 
     cur.execute("""
-        CREATE TABLE OF NOT EXISTS Professors(
+        CREATE TABLE IF NOT EXISTS Professors(
             id SERIAL PRIMARY KEY,
             Name TEXT NOT NULL,
             grade_average FLOAT NOT NULL DEFAULT 0,

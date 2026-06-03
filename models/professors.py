@@ -1,7 +1,7 @@
 from database import db_connection
 #from models.category import Category
 
-class professorSearch:
+class professors:
     def __init__(self, id, text, category):
         self.id = id
         self.text = text
