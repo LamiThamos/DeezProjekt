@@ -11,14 +11,14 @@ class Courses:
          self.exam_type = exam_type
 
 
-def list_courses(professor):
+def list_courses(professor_id):
      print("another test")
      conn = db_connection()
      cur = conn.cursor()
      cur.execute('''SELECT * 
                     FROM Courses 
                     JOIN CourseHasProfessor ON Courses.id = CourseHasProfessor.course_id
-                    WHERE professor_id=%s''', professor)
+                    WHERE professor_id=%s''', (professor_id,))
      db_professor_courses = cur.fetchall()
 
      professor_courses = []
