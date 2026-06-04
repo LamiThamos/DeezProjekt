@@ -26,7 +26,7 @@ def init_db():
         CREATE TABLE Professors(
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
-            grade_average FLOAT NOT NULL DEFAULT 0,
+            grade_average FLOAT,
             pass_percentage FLOAT NOT NULL DEFAULT 0
         );
     """)
@@ -138,12 +138,12 @@ def seed_db():
             (name,)
         )
 
-    courses = [
-        ("DIS", 100, "7-trinsskala", 3.5, 85.0, "ITX"),
-        ("RAD", 80, "7-trinsskala", 3.0, 80.0, "Oral"),
-        ("POP", 60, "Pass/fail", 2.5, 75.0, "Continuous assessment"),
-        ("DMA", 50, "Pass/fail", 3.8, 90.0, "Continuous assessment"),
-        ("SU", 40, "Pass/fail", 2.0, 70.0, "Oral")
+    courses = [ 
+        ("DIS", 276, "7-trinsskala", 4.4, 62.0, "ITX"),
+        ("RAD", 90, "7-trinsskala", 7.3, 63.0, "Oral"),
+        ("POP", 294, "Pass/fail", None, 79.0, "Continuous assessment"),
+        ("DMA", 151, "Pass/fail", None, 80.0, "Continuous assessment"),
+        ("SU", 186, "Pass/fail", 8.2, 67.0, "Oral")
     ]
 
     for course in courses:
