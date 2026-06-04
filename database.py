@@ -123,12 +123,13 @@ def seed_db():
     cur = conn.cursor()
 
     professors = [
-        "Dmitriy",
-        "Panos",
+        "Dmitriy Traytel",
+        "Panagiotis Karras",
         "Philippe Bonnet",
         "Mikkel Abrahamsen",
         "Boris Düdder",
-        "Jacob"
+        "Jacob Holm",
+        "Mikkel Thorup"
     ]
 
     for name in professors:
@@ -154,13 +155,14 @@ def seed_db():
         """, course)
     
     courseHasProfessorRelation = [
-        (1, 1, True), 
-        (1, 2, False), 
-        (2, 6, True), 
-        (3, 3, True), 
-        (4, 4, True), 
-        (5, 5, True), 
-        (3, 5, False)
+        (1, 1, True),  # Dmitriy Traytel is course responsible for DIS
+        (1, 2, False), # Panagiotis Karras teaches DIS
+        (2, 6, True),  # Jacob Holm is course responsible for RAD
+        (2, 7, False), # Mikkel Thorup teaches RAD
+        (3, 3, True),  # Philippe Bonnet is course responsible for POP
+        (4, 4, True),  # Mikkel Abrahamsen is course responsible for DMA
+        (5, 3, False), # Philippe Bonnet teaches SU
+        (5, 5, True)   # Boris Düdder is course responsible for SU
     ]
     
     for (course_id, professor_id, is_course_responsible) in courseHasProfessorRelation:
