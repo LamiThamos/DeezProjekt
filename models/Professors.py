@@ -2,21 +2,29 @@ from database import db_connection
 #from models.category import Category
 
 class Professors:
-    def __init__(self, id, name, gradeAverage, passPercentage):
+    def __init__(self, id, name, grade_average, pass_percentage):
         self.id = id
         self.name = name
-        self.gradeAverage = gradeAverage
-        self.passPercentage = passPercentage
+        self.grade_average = grade_average
+        self.pass_percentage = pass_percentage
 
-def listProfessors(pattern):
+def list_professors(pattern):
     conn = db_connection()
     cur = conn.cursor()
-    #cur.execute('SELECT todos.id as tid, todo_text, categories.id as cid, category_name FROM todos JOIN categories ON todos.category_id = categories.id')
     cur.execute('SELECT * FROM professors WHERE name ~* %s', (pattern,))
     db_professors = cur.fetchall()
     professors = []
     for professor_entry in db_professors:
-        professors.append(professor_entry)
+        professors.append(Professors(professor_entry[0], professor_entry[1], professor_entry[2], professor_entry[3]))
 
     conn.close()
     return professors
+
+def get_professor_by_id(professor_id):
+    conn = db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM professors WHERE id = %s', (professor_id,))
+    db_professor = cur.fetchall()[0]
+    professor = Professors(db_professor[0], db_professor[1], db_professor[2], db_professor[3])
+    conn.close()
+    return professor
