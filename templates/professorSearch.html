@@ -96,13 +96,37 @@
             color: #6b7280;
             margin-bottom: 10px;
         }
+
+        .nav-button {
+            position: absolute;
+            top: 40px;
+            left: 20px;
+
+            padding: 12px 18px;
+
+            background-color: #007bff;
+            color: white;
+
+            text-decoration: none;
+
+            border-radius: 8px;
+
+            font-size: 15px;
+        }
+
+        .nav-button:hover {
+            background-color: #005fcc;
+        }
     </style>
 </head>
 
 <body>
+    <a href="/" class="nav-button">
+                Start page
+    </a>
     <div class="page-container">
 
-        <form method="GET" action="/professorSearch" class="search-form">
+        <form method="GET" action="/professorSearch" class="search-form">    
             <input 
                 type="text" 
                 name="professor_name" 
@@ -130,20 +154,20 @@
                 {% for professor in professors %}
                     <tr>
                         <td>
-                            <a href="/courseList?professor_id={{professor[0]}}" class="table-link">
-                                {{ professor[1] }}
+                            <a href="/courseList?professor_id={{professor.id}}" class="table-link">
+                                {{ professor.name }}
                             </a>
                         </td>
 
                         <td>
-                            <a href="/hej" class="table-link">
-                                {{ professor[2] }}
+                            <a href="/courseList?professor_id={{professor.id}}" class="table-link">
+                                {{ professor.grade_average }}
                             </a>
                         </td>
 
                         <td>
-                            <a href="/hej" class="table-link">
-                                {{ professor[3] }}%
+                            <a href="/courseList?professor_id={{professor.id}}" class="table-link">
+                                {{ professor.pass_percentage }}%
                             </a>
                         </td>
                     </tr>
