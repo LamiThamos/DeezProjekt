@@ -1,29 +1,29 @@
-from database import db_connection
+# from database import db_connection
 
-class Category:
-    def __init__(self, id, name):
-        self.id = id
-        self.name = name
+# class CourseHasProfessor:
+#     def __init__(self, id, name):
+#         self.id = id
+#         self.name = name
 
-def list_categories():
-    conn = db_connection()
-    cur = conn.cursor()
-    cur.execute('SELECT id, category_name FROM categories')
-    db_categories = cur.fetchall()
+# def list_categories():
+#     conn = db_connection()
+#     cur = conn.cursor()
+#     cur.execute('SELECT id, category_name FROM categories')
+#     db_categories = cur.fetchall()
 
-    categories = []
-    for db_category in db_categories:
-        categories.append(Category(db_category[0], db_category[1]))
-    conn.close()
-    return categories
+#     categories = []
+#     for db_category in db_categories:
+#         categories.append(Category(db_category[0], db_category[1]))
+#     conn.close()
+#     return categories
 
-def insert_relation(course_id, professor_id, is_course_responsible):
-    conn = db_connection()
-    cur = conn.cursor()
+# def insert_relation(course_id, professor_id, is_course_responsible):
+#     conn = db_connection()
+#     cur = conn.cursor()
 
-    cur.execute('INSERT INTO CourseHasProfessor (CourseID, ProfessorID, IsCourseResposible) VALUES (%s, %s, %b) ON CONFLICT DO NOTHING', (course_id, professor_id, is_course_responsible))
-    conn.commit()
-    conn.close()
+#     cur.execute('INSERT INTO CourseHasProfessor (CourseID, ProfessorID, IsCourseResposible) VALUES (%s, %s, %b) ON CONFLICT DO NOTHING', (course_id, professor_id, is_course_responsible))
+#     conn.commit()
+#     conn.close()
 
 
 #from database import db_connection
