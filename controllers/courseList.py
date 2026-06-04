@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request
 from models.Courses import list_courses
+from models.Professors import get_professor_by_id
 
 bp = Blueprint('courseList', __name__, url_prefix='/')
 
@@ -10,5 +11,6 @@ def course_list():
     print(professor_id)
     courses = list_courses(professor_id)
     print(courses)
+    professor = get_professor_by_id(professor_id)
 
-    return render_template('courseList.html', courses=courses)
+    return render_template('courseList.html', courses=courses, professor=professor)
