@@ -3,9 +3,9 @@ import os
 
 # Try to get from system enviroment variable
 # Set your Postgres user, password, and database name as second arguments of these three next function calls
-dbname   = os.environ.get('PGDATABASE', 'postgres')
-user     = os.environ.get('PGUSER',     'Project')
-password = os.environ.get('PGPASSWORD', 'Deez')
+dbname   = os.environ.get('PGDATABASE', 'DIS Project')
+user     = os.environ.get('PGUSER',     'dis project')
+password = os.environ.get('PGPASSWORD', '123')
 host     = os.environ.get('HOST',       '127.0.0.1')
 
 def db_connection():
