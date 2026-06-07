@@ -1,0 +1,3 @@
+Vi har brugt ChatGPT lidt undervejs i projektet, primært til sparring, hjælp med mindre fejl i koden og til at få forklaret nogle ting, vi var i tvivl om. Det er også blevet brugt til enkelte forslag til formuleringer og opsætning.
+
+Alt er efterfølgende blevet gennemgået og tilpasset af os, og vi står selv for den endelige løsning.
